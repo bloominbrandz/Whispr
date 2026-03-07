@@ -7,6 +7,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
 
+        /* RESET & BASE */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -16,7 +17,7 @@
 
         canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
 
-        /* ULTRA TRANSPARENT & DRAMATIC UI */
+        /* ULTRA TRANSPARENT UI */
         .wrapper {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -55,7 +56,6 @@
 
         .fade-out { opacity: 0; transform: translate(-50%, -55%) scale(0.95); pointer-events: none; }
 
-        /* FLOATING WORDS */
         .word-float {
             position: fixed; pointer-events: none; z-index: 200;
             font-size: 2.2rem; color: #fff; 
@@ -71,20 +71,23 @@
         <div class="container">
             <img src="https://i.imgur.com/7vlpCCX.png" class="logo" alt="Whispers">
             <form id="whisperForm">
-                <input type="text" placeholder="Dear someone..." autocomplete="off">
-                <textarea placeholder="Whisper your unsaid words..." required></textarea>
-                <input type="text" placeholder="Sincerely," autocomplete="off">
+                <input type="text" id="dear" placeholder="Dear someone..." autocomplete="off">
+                <textarea id="message" placeholder="Whisper your unsaid words..." required></textarea>
+                <input type="text" id="from" placeholder="Sincerely," autocomplete="off">
                 <button type="submit" id="releaseBtn">Release</button>
             </form>
         </div>
     </div>
 
     <script>
+        // --- GOOGLE SPREADSHEET URL ---
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwt-VVOW1VP8Q1u1eGo_2dMKVQ8EZhTM0fSt7HkRBxTfNEfYmbTamXZzaN5pLQv2WT1/exec';
+
+        // --- FIREFLY ENGINE ---
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const mainBox = document.getElementById('mainBox');
         const form = document.getElementById('whisperForm');
-
         let particles = [];
         let mouse = { x: -1000, y: -1000, active: false };
         const particleCount = 180; 
@@ -117,19 +120,16 @@
                 this.x += this.vx + Math.sin(this.angle) * 0.3;
                 this.y += this.vy + Math.cos(this.angle) * 0.3;
                 this.angle += 0.01;
-
-                // MAGNETIC SWARM LOGIC
                 if (mouse.active) {
                     let dx = mouse.x - this.x;
                     let dy = mouse.y - this.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < 350) {
-                        let force = (350 - distance) / 350;
-                        this.x += (dx / distance) * force * 4.5;
-                        this.y += (dy / distance) * force * 4.5;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 350) {
+                        let force = (350 - dist) / 350;
+                        this.x += (dx / dist) * force * 4.5;
+                        this.y += (dy / dist) * force * 4.5;
                     }
                 }
-
                 if (this.x < -10) this.x = canvas.width + 10;
                 if (this.x > canvas.width + 10) this.x = -10;
                 if (this.y < -10) this.y = canvas.height + 10;
@@ -148,7 +148,6 @@
             requestAnimationFrame(animate);
         }
 
-        // Interaction Listeners
         const handleDown = (e) => {
             mouse.active = true;
             mouse.x = e.touches ? e.touches[0].clientX : e.clientX;
@@ -168,11 +167,27 @@
         window.addEventListener('touchend', handleUp);
         window.addEventListener('resize', initCanvas);
 
-        // RELEASE LOGIC
+        // --- SUBMISSION ---
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const text = form.querySelector('textarea').value;
-            const words = text.split(/\s+/);
+
+            const data = {
+                dear: document.getElementById('dear').value,
+                message: document.getElementById('message').value,
+                from: document.getElementById('from').value,
+                timestamp: new Date().toLocaleString()
+            };
+
+            // Send to Spreadsheet
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            // Start Animation
+            const words = data.message.split(/\s+/);
             mainBox.classList.add('fade-out');
 
             words.forEach((word, i) => {
@@ -180,17 +195,14 @@
                     const el = document.createElement('div');
                     el.className = 'word-float';
                     el.innerText = word;
-                    el.style.left = '50%';
-                    el.style.top = '50%';
+                    el.style.left = '50%'; el.style.top = '50%';
                     document.body.appendChild(el);
-
                     const driftX = (Math.random() - 0.5) * 400;
                     el.animate([
                         { transform: 'translate(-50%, -50%) scale(0.6)', opacity: 0 },
                         { transform: `translate(calc(-50% + ${driftX/2}px), -20vh) scale(1.1)`, opacity: 1, offset: 0.2 },
                         { transform: `translate(calc(-50% + ${driftX}px), -110vh) scale(1.8)`, opacity: 0 }
                     ], { duration: 7500, easing: 'ease-in-out', fill: 'forwards' });
-
                     setTimeout(() => el.remove(), 7500);
                 }, i * 450);
             });
@@ -201,9 +213,7 @@
             }, (words.length * 450) + 6500);
         });
 
-        initCanvas();
-        setup();
-        animate();
+        initCanvas(); setup(); animate();
     </script>
 </body>
 </html>
