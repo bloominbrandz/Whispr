@@ -3,87 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whispers | The Radiant Void</title>
+    <title>Whispers | Magnetic Ember</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
 
-        /* 1. RESET & BASE STYLES */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; }
-        body { 
-            font-family: 'Shadows Into Light', cursive; color: white; 
-            display: flex; justify-content: center; align-items: center;
-            -webkit-font-smoothing: antialiased; 
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #050200; overflow: hidden; 
+            font-family: 'Shadows Into Light', cursive; color: white;
         }
 
-        /* 2. BACKGROUND AMBIANCE */
-        .smoke-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 1; opacity: 0.4; background: radial-gradient(circle at center, #1a1b3a 0%, #000 100%);
-            filter: blur(60px); pointer-events: none;
+        canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
+
+        /* ULTRA TRANSPARENT & DRAMATIC UI */
+        .wrapper {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; max-width: 380px; z-index: 100;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s ease;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            padding: 30px; border-radius: 40px;
+            border: 1px solid rgba(255, 69, 0, 0.1);
+            text-align: center;
         }
 
-        /* 3. MINIMALIST UI (Pinaliit na Box) */
-        .wrapper { width: 90%; max-width: 380px; z-index: 10; position: relative; }
-        .container { 
-            background: rgba(255, 255, 255, 0.01); 
-            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); 
-            padding: 25px; border-radius: 30px; 
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            text-align: center; transition: all 0.8s ease;
-            transform: translateZ(0); /* Safari GPU boost */
-        }
-        .container.fade-out { opacity: 0; transform: scale(0.9) translateY(-10px) translateZ(0); pointer-events: none; }
+        .logo { width: 100px; margin-bottom: 20px; opacity: 0.7; filter: drop-shadow(0 0 8px #ff4500); }
 
-        .logo { width: 120px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.4)); }
+        input, textarea {
+            width: 100%; background: transparent; border: none;
+            border-bottom: 1px solid rgba(255, 69, 0, 0.2);
+            margin-bottom: 15px; padding: 10px; color: #fff;
+            font-family: inherit; font-size: 1.1rem; outline: none;
+            transition: border-bottom 0.5s;
+        }
+        input:focus, textarea:focus { border-bottom: 1px solid #ff4500; }
+        textarea { height: 90px; resize: none; }
+        
+        button {
+            background: transparent; border: 1px solid rgba(255, 69, 0, 0.5);
+            color: #ff4500; padding: 12px 40px; border-radius: 50px;
+            font-family: inherit; font-size: 1.3rem; cursor: pointer;
+            transition: 0.4s; margin-top: 10px;
+        }
+        button:hover { background: #ff4500; color: #000; box-shadow: 0 0 30px rgba(255, 69, 0, 0.6); }
 
-        input, textarea { 
-            width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(0, 0, 0, 0.4); 
-            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; color: #fff; 
-            font-family: 'Shadows Into Light', cursive; font-size: 18px; outline: none; 
-            -webkit-appearance: none;
-        }
-        textarea { height: 100px; resize: none; }
+        .fade-out { opacity: 0; transform: translate(-50%, -55%) scale(0.95); pointer-events: none; }
 
-        button { 
-            width: 100%; padding: 14px; background: rgba(255, 255, 255, 0.05); color: white; 
-            border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 50px; cursor: pointer; 
-            font-size: 1.3rem; font-family: 'Shadows Into Light', cursive; transition: 0.3s;
-            -webkit-appearance: none;
-        }
-        button:hover { background: white; color: black; box-shadow: 0 0 25px rgba(255, 255, 255, 0.4); }
-
-        /* 4. FIREFLIES (Small & Radiant) */
-        .firefly { 
-            position: fixed; border-radius: 50%; pointer-events: none; z-index: 2; top: 0; left: 0; 
-            will-change: transform; width: 3px; height: 3px; 
-        }
-        .gold { 
-            background: #fff; 
-            box-shadow: 0 0 5px 1.5px #fff, 0 0 14px 5px #ffea00, 0 0 28px 10px rgba(255, 234, 0, 0.5); 
-        }
-        .aqua { 
-            background: #fff; 
-            box-shadow: 0 0 5px 1.5px #fff, 0 0 14px 5px #00e5ff, 0 0 28px 10px rgba(0, 229, 255, 0.5);
-        }
-
-        /* 5. WORD UNITS */
-        .word-unit {
-            position: fixed; top: 0; left: 0; font-size: 32px; color: #fff; 
-            text-shadow: 0 0 8px #fff, 0 0 20px rgba(255, 255, 255, 0.6);
-            pointer-events: none; white-space: nowrap; z-index: 9999; opacity: 0;
-            will-change: transform, opacity;
+        /* FLOATING WORDS */
+        .word-float {
+            position: fixed; pointer-events: none; z-index: 200;
+            font-size: 2.2rem; color: #fff; 
+            text-shadow: 0 0 10px #ff4500, 0 0 20px #ff4500;
         }
     </style>
 </head>
 <body>
 
-    <div class="smoke-overlay"></div>
+    <canvas id="canvas"></canvas>
 
-    <div class="wrapper">
-        <div class="container" id="mainBox">
+    <div class="wrapper" id="mainBox">
+        <div class="container">
             <img src="https://i.imgur.com/7vlpCCX.png" class="logo" alt="Whispers">
-            <form id="letterForm">
+            <form id="whisperForm">
                 <input type="text" placeholder="Dear someone..." autocomplete="off">
                 <textarea placeholder="Whisper your unsaid words..." required></textarea>
                 <input type="text" placeholder="Sincerely," autocomplete="off">
@@ -93,98 +80,130 @@
     </div>
 
     <script>
-        const form = document.getElementById("letterForm");
-        const releaseBtn = document.getElementById("releaseBtn");
-        const mainBox = document.getElementById("mainBox");
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const mainBox = document.getElementById('mainBox');
+        const form = document.getElementById('whisperForm');
 
-        // --- AMBIENT FIREFLIES (Full Screen) ---
-        function createAmbientFirefly() {
-            const f = document.createElement("div");
-            f.className = `firefly ${Math.random() > 0.5 ? 'gold' : 'aqua'}`;
-            const sX = Math.random() * window.innerWidth;
-            const sY = Math.random() * window.innerHeight;
-            document.body.appendChild(f);
+        let particles = [];
+        let mouse = { x: -1000, y: -1000, active: false };
+        const particleCount = 180; 
 
-            f.animate([
-                { opacity: 0, transform: `translate3d(${sX}px, ${sY}px, 0) scale(0.5)` },
-                { opacity: 1, transform: `translate3d(${sX + (Math.random()-0.5)*80}px, ${sY - 40}px, 0) scale(1.2)`, offset: 0.5 },
-                { opacity: 0, transform: `translate3d(${sX + (Math.random()-0.5)*160}px, ${sY - 120}px, 0) scale(0.5)` }
-            ], { duration: 6000 + Math.random() * 4000, iterations: Infinity });
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-        for (let i = 0; i < 80; i++) createAmbientFirefly();
 
-        // --- SWARM & LIFT LOGIC (The Void Experience) ---
-        function swarmAndLift(word, index) {
-            const cX = window.innerWidth / 2;
-            const cY = window.innerHeight / 2;
-            const wordEl = document.createElement("div");
-            wordEl.className = "word-unit";
-            wordEl.innerText = word;
-            document.body.appendChild(wordEl);
-
-            const swarmLights = [];
-            const lightCount = 5;
-
-            for (let j = 0; j < lightCount; j++) {
-                const light = document.createElement("div");
-                light.className = `firefly ${Math.random() > 0.5 ? 'gold' : 'aqua'}`;
-                light.style.width = light.style.height = '4px'; 
-                document.body.appendChild(light);
-                swarmLights.push(light);
+        class Particle {
+            constructor() { this.init(); }
+            init() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1.5; 
+                this.vx = (Math.random() - 0.5) * 1.2;
+                this.vy = (Math.random() - 0.5) * 1.2;
+                this.opacity = Math.random() * 0.5 + 0.2;
+                this.angle = Math.random() * Math.PI * 2;
             }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 69, 0, ${this.opacity})`;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "#ff4500";
+                ctx.fill();
+            }
+            update() {
+                this.x += this.vx + Math.sin(this.angle) * 0.3;
+                this.y += this.vy + Math.cos(this.angle) * 0.3;
+                this.angle += 0.01;
 
-            const wordDelay = index * 550; // Gentle pacing
-            const liftDuration = 7500;    // Dramatic slow lift
-            const driftX = (Math.random() - 0.5) * 300;
+                // MAGNETIC SWARM LOGIC
+                if (mouse.active) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 350) {
+                        let force = (350 - distance) / 350;
+                        this.x += (dx / distance) * force * 4.5;
+                        this.y += (dy / distance) * force * 4.5;
+                    }
+                }
 
-            // Word Movement
-            wordEl.animate([
-                { opacity: 0, transform: `translate3d(${cX}px, ${cY}px, 0) translate(-50%, -50%) scale(0.4)` },
-                { opacity: 1, transform: `translate3d(${cX}px, ${cY}px, 0) translate(-50%, -50%) scale(1)`, offset: 0.15 },
-                { opacity: 1, transform: `translate3d(${cX}px, ${cY}px, 0) translate(-50%, -50%) scale(1.1)`, offset: 0.45 },
-                { opacity: 0, transform: `translate3d(${cX + driftX}px, -15vh, 0) translate(-50%, -50%) scale(1.6)` }
-            ], { duration: liftDuration, delay: wordDelay, fill: 'forwards', easing: 'ease-in-out' });
-
-            // Swarm Movement
-            swarmLights.forEach((light, j) => {
-                const angle = (j / lightCount) * Math.PI * 2;
-                const orbitX = Math.cos(angle) * 35;
-                const orbitY = Math.sin(angle) * 35;
-                const sX = Math.random() * window.innerWidth;
-                const sY = Math.random() * window.innerHeight;
-
-                light.animate([
-                    { opacity: 0, transform: `translate3d(${sX}px, ${sY}px, 0)` },
-                    { opacity: 1, transform: `translate3d(${cX + orbitX}px, ${cY + orbitY}px, 0)`, offset: 0.25 },
-                    { opacity: 1, transform: `translate3d(${cX + orbitX}px, ${cY + orbitY}px, 0)`, offset: 0.45 }, 
-                    { opacity: 0, transform: `translate3d(${cX + orbitX + driftX}px, -15vh, 0) scale(1.3)` }
-                ], { duration: liftDuration, delay: wordDelay, fill: 'forwards', easing: 'ease-in-out' });
-            });
-
-            setTimeout(() => {
-                wordEl.remove();
-                swarmLights.forEach(l => l.remove());
-            }, liftDuration + wordDelay + 100);
+                if (this.x < -10) this.x = canvas.width + 10;
+                if (this.x > canvas.width + 10) this.x = -10;
+                if (this.y < -10) this.y = canvas.height + 10;
+                if (this.y > canvas.height + 10) this.y = -10;
+            }
         }
 
-        // --- FORM SUBMISSION ---
-        form.addEventListener("submit", (e) => {
+        function setup() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        // Interaction Listeners
+        const handleDown = (e) => {
+            mouse.active = true;
+            mouse.x = e.touches ? e.touches[0].clientX : e.clientX;
+            mouse.y = e.touches ? e.touches[0].clientY : e.clientY;
+        };
+        const handleMove = (e) => {
+            mouse.x = e.touches ? e.touches[0].clientX : e.clientX;
+            mouse.y = e.touches ? e.touches[0].clientY : e.clientY;
+        };
+        const handleUp = () => { mouse.active = false; };
+
+        window.addEventListener('mousedown', handleDown);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleUp);
+        window.addEventListener('touchstart', handleDown);
+        window.addEventListener('touchmove', handleMove);
+        window.addEventListener('touchend', handleUp);
+        window.addEventListener('resize', initCanvas);
+
+        // RELEASE LOGIC
+        form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const words = form.querySelector('textarea').value.split(/\s+/);
-            releaseBtn.disabled = true;
+            const text = form.querySelector('textarea').value;
+            const words = text.split(/\s+/);
             mainBox.classList.add('fade-out');
 
-            words.forEach((word, i) => swarmAndLift(word, i));
-            
-            // TOTAL WAIT: Words duration + lift + 2 seconds dramatic pause
-            const totalTime = (words.length * 550) + 7500 + 2000;
+            words.forEach((word, i) => {
+                setTimeout(() => {
+                    const el = document.createElement('div');
+                    el.className = 'word-float';
+                    el.innerText = word;
+                    el.style.left = '50%';
+                    el.style.top = '50%';
+                    document.body.appendChild(el);
+
+                    const driftX = (Math.random() - 0.5) * 400;
+                    el.animate([
+                        { transform: 'translate(-50%, -50%) scale(0.6)', opacity: 0 },
+                        { transform: `translate(calc(-50% + ${driftX/2}px), -20vh) scale(1.1)`, opacity: 1, offset: 0.2 },
+                        { transform: `translate(calc(-50% + ${driftX}px), -110vh) scale(1.8)`, opacity: 0 }
+                    ], { duration: 7500, easing: 'ease-in-out', fill: 'forwards' });
+
+                    setTimeout(() => el.remove(), 7500);
+                }, i * 450);
+            });
 
             setTimeout(() => {
                 form.reset();
                 mainBox.classList.remove('fade-out');
-                releaseBtn.disabled = false;
-            }, totalTime);
+            }, (words.length * 450) + 6500);
         });
+
+        initCanvas();
+        setup();
+        animate();
     </script>
 </body>
 </html>
